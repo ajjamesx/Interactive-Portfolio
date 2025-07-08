@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anuj’s Interactive Portfolio</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 1em;
+      display: flex;
+      justify-content: center;
+      gap: 2em;
+      z-index: 1;
+    }
+
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+
+    nav a:hover {
+      color: #00ffff;
+    }
+
+    section {
+      text-align: center;
+      padding: 8em 2em;
+      z-index: 1;
+    }
+
+    .spacer {
+      height: 100vh;
+    }
+
+    form {
+  max-width: 400px;
+  margin: auto;
+}
+input, textarea {
+  width: 100%;
+  padding: 0.5em;
+  margin-bottom: 1em;
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: white;
+  font-size: 1em;
+}
+button {
+  background-color: #00ffff;
+  color: black;
+  padding: 0.5em 1em;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #00dddd;
+}
+#status {
+  margin-top: 1em;
+  font-weight: bold;
+}
+  </style>
+</head>
+<body>
+  <canvas id="canvas" style="background-color: black;"></canvas>
+
+  <nav>
+    <a href="#home">Home</a>
+    <a href="#projects">Projects</a>
+    <a href="https://github.com/ajjamesx" target="_blank">GitHub</a>
+    <a href="#contact">Contact Me</a>
+  </nav>
+
+  <section id="home">
+    <h1 style="font-size: 20px;">Welcome to My Creative Space</h1>
+    <p>Explore my journey in code, automation, and interactive design.</p>
+  </section>
+
+  <div class="spacer"></div>
+
+  <section id="projects">
+    <h2>Projects</h2>
+    <p>Check out some of my PowerShell, Python, and GUI creations.</p>
+  </section>
+
+  <div class="spacer"></div>
+
+    <section id="contact">
+    <h2>Contact Me</h2>
+    <form id="contactForm">
+        <input type="text" name="name" placeholder="Your Name" required />
+        <input type="email" name="email" placeholder="Your Email" required />
+        <textarea name="message" rows="5" placeholder="Your Message" required></textarea>
+        <button type="submit">Send Message</button>
+    </form>
+    <p id="status"></p>
+    </section>
+
+
+  <script>
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = w;
+    canvas.height = h;
+
+    let yaw = 0, pitch = 0, camZ = 100;
+
+    window.addEventListener('resize', () => {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    });
+
+    window.addEventListener('mousemove', e => {
+      yaw = (e.clientX / w - 0.5) * Math.PI;
+      pitch = (e.clientY / h - 0.5) * Math.PI;
+    });
+
+    window.addEventListener('keydown', e => {
+      if (e.key === 'w') camZ -= 10;
+      if (e.key === 's') camZ += 10;
+    });
+
+    const particles = [];
+
+    class Particle {
+      constructor(angle, radius) {
+        this.baseAngle = angle;
+        this.radius = radius;
+        this.z = Math.random() * 180 + 50;
+      }
+
+      update(time) {
+        const t = time * 0.0005;
+        const angle = this.baseAngle + t;
+
+        let x = Math.cos(angle) * this.radius;
+        let y = Math.sin(angle) * this.radius;
+        let z = this.z;
+
+        let yRot = y * Math.cos(pitch) - z * Math.sin(pitch);
+        let zRot = y * Math.sin(pitch) + z * Math.cos(pitch);
+
+        let xRot = x * Math.cos(yaw) + zRot * Math.sin(yaw);
+        zRot = -x * Math.sin(yaw) + zRot * Math.cos(yaw);
+
+        const scale = 300 / (zRot + camZ);
+        this.x = w / 2 + xRot * scale;
+        this.y = h / 2 + yRot * scale;
+        this.size = Math.max(1, scale * 2);
+        this.hue = (angle * 180 / Math.PI + time * 0.1) % 360;
+        this.alpha = Math.max(0.2, scale / 8);
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${this.hue}, 100%, 50%, ${this.alpha})`;
+        ctx.fill();
+      }
+    }
+
+    for (let r = 0; r < 120; r += 5) {
+      for (let a = 0; a < 360; a += 10) {
+        particles.push(new Particle(Math.PI * a / 180, r));
+      }
+    }
+
+    function render(time) {
+      ctx.clearRect(0, 0, w, h);
+      ctx.globalCompositeOperation = 'lighter';
+
+      for (let p of particles) {
+        p.update(time);
+        p.draw();
+      }
+
+      ctx.globalCompositeOperation = 'source-over';
+      requestAnimationFrame(render);
+    }
+
+    render(0);
+  </script>
+</body>
+</html>
