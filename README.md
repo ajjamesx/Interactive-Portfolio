@@ -1,4 +1,4 @@
-# 🌌 Anuj’s Interactive Portfolio
+# 🌌 Interactive Portfolio
 
 Welcome to my creative space! This is a visually engaging, interactive portfolio site built entirely with HTML, CSS, and JavaScript. It showcases my work in automation, GUI development, and interactive design, while also serving as a platform to connect.
 
